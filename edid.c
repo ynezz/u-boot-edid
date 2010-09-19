@@ -132,11 +132,16 @@ void print_edid(struct edid1_info *edid_info)
 	       edid_info->video_input_definition.digital ?
 	       "digital signal" : "analog signal");
 
+#ifdef __WITHOUT_UBOOT_
 	printf("Monitor is %s, gamma: %.02f\n",
 		edid_info->feature_support.rgb ? "RGB" : "non-RGB",
 		edid_info->gamma / 100.0 + 1);
+#else
+	printf("Monitor is %s\n",
+		edid_info->feature_support.rgb ? "RGB" : "non-RGB");
+#endif
 
-	printf("Maximum image visible display size: %d cm x %d cm\n",
+	printf("Maximum visible display size: %d cm x %d cm\n",
 	       edid_info->max_size_horizontal,
 	       edid_info->max_size_vertical);
 
