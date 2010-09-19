@@ -85,39 +85,38 @@ static char *snip(char *string)
 void print_edid(struct edid1_info *edid_info)
 {
 	int i;
-	unsigned char hmin, hmax, vmin, vmax;
 	char manufacturer[4];
 	unsigned char *timings;
 	struct edid_monitor_descriptor *monitor;
 	unsigned char *timing;
+	unsigned int have_timing = 0;
 
-	printf("edid: %d %d\n",
+	printf("EDID version: %d.%d\n",
 	       edid_info->version, edid_info->revision);
 
 	manufacturer[0] = edid_info->manufacturer_name.char1 + 'A' - 1;
 	manufacturer[1] = edid_info->manufacturer_name.char2 + 'A' - 1;
 	manufacturer[2] = edid_info->manufacturer_name.char3 + 'A' - 1;
 	manufacturer[3] = '\0';
-	printf("id: %04x\n", edid_info->product_code);
-	printf("eisa: %s%04x\n", manufacturer, edid_info->product_code);
+	printf("Product ID code: %04x\n", edid_info->product_code);
+	printf("Manufacturer: %s\n", manufacturer);
 	
 	if (edid_info->serial_number != 0xffffffff) {
-		if(strcmp(manufacturer, "MAG") == 0) {
+		if (strcmp(manufacturer, "MAG") == 0) {
 			edid_info->serial_number -= 0x7000000;
 		}
-		if(strcmp(manufacturer, "OQI") == 0) {
+		if (strcmp(manufacturer, "OQI") == 0) {
 			edid_info->serial_number -= 456150000;
 		}
-		if(strcmp(manufacturer, "VSC") == 0) {
+		if (strcmp(manufacturer, "VSC") == 0) {
 			edid_info->serial_number -= 640000000;
 		}
 	}
-	printf("serial: %08x\n", edid_info->serial_number);
-
-	printf("manufacture: %d %d\n",
+	printf("Serial number: %08x\n", edid_info->serial_number);
+	printf("Manufactured in week: %d year: %d\n",
 	       edid_info->week, edid_info->year + 1990);
 
-	printf("input: %s%s%s%s.\n",
+	printf("Video input definition: %s%s%s%s\n",
 	       edid_info->video_input_definition.separate_sync ?
 	       "separate sync, " : "",
 	       edid_info->video_input_definition.composite_sync ?
@@ -127,62 +126,65 @@ void print_edid(struct edid1_info *edid_info)
 	       edid_info->video_input_definition.digital ?
 	       "digital signal" : "analog signal");
 
-	printf("screensize: %d %d\n",
+	printf("Monitor is %s, gamma: %.02f\n",
+		edid_info->feature_support.rgb ? "RGB" : "non-RGB",
+		edid_info->gamma / 100.0 + 1);
+
+	printf("Maximum image visible display size: %d cm x %d cm\n",
 	       edid_info->max_size_horizontal,
 	       edid_info->max_size_vertical);
 
-	printf("gamma: %f\n", edid_info->gamma / 100.0 + 1);
-
-	printf("dpms: %s, %s%s, %s%s, %s%s\n",
-	       edid_info->feature_support.rgb ? "RGB" : "non-RGB",
+	printf("Power management features: %s%s, %s%s, %s%s\n",
 	       edid_info->feature_support.active_off ? "" : "no ", "active off",
 	       edid_info->feature_support.suspend ? "" : "no ", "suspend",
 	       edid_info->feature_support.standby ? "" : "no ", "standby");
 
-	if(edid_info->established_timings.timing_720x400_70)
-		printf("timing: 720x400@70 Hz (VGA 640x400, IBM)\n");
-	if(edid_info->established_timings.timing_720x400_88)
-		printf("timing: 720x400@88 Hz (XGA2)\n");
-	if(edid_info->established_timings.timing_640x480_60)
-		printf("timing: 640x480@60 Hz (VGA)\n");
-	if(edid_info->established_timings.timing_640x480_67)
-		printf("timing: 640x480@67 Hz (Mac II, Apple)\n");
-	if(edid_info->established_timings.timing_640x480_72)
-		printf("timing: 640x480@72 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_640x480_75)
-		printf("timing: 640x480@75 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_800x600_56)
-		printf("timing: 800x600@56 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_800x600_60)
-		printf("timing: 800x600@60 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_800x600_72)
-		printf("timing: 800x600@72 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_800x600_75)
-		printf("timing: 800x600@75 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_832x624_75)
-		printf("timing: 832x624@75 Hz (Mac II)\n");
-	if(edid_info->established_timings.timing_1024x768_87i)
-		printf("timing: 1024x768@87 Hz Interlaced (8514A)\n");
-	if(edid_info->established_timings.timing_1024x768_60)
-		printf("timing: 1024x768@60 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_1024x768_70)
-		printf("timing: 1024x768@70 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_1024x768_75)
-		printf("timing: 1024x768@75 Hz (VESA)\n");
-	if(edid_info->established_timings.timing_1280x1024_75)
-		printf("timing: 1280x1024@75 (VESA)\n");
+	printf("Estabilished timings:\n");
+	if (edid_info->established_timings.timing_720x400_70)
+		printf("\t720x400\t\t70 Hz (VGA 640x400, IBM)\n");
+	if (edid_info->established_timings.timing_720x400_88)
+		printf("\t720x400\t\t88 Hz (XGA2)\n");
+	if (edid_info->established_timings.timing_640x480_60)
+		printf("\t640x480\t\t60 Hz (VGA)\n");
+	if (edid_info->established_timings.timing_640x480_67)
+		printf("\t640x480\t\t67 Hz (Mac II, Apple)\n");
+	if (edid_info->established_timings.timing_640x480_72)
+		printf("\t640x480\t\t72 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_640x480_75)
+		printf("\t640x480\t\t75 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_800x600_56)
+		printf("\t800x600\t\t56 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_800x600_60)
+		printf("\t800x600\t\t60 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_800x600_72)
+		printf("\t800x600\t\t72 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_800x600_75)
+		printf("\t800x600\t\t75 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_832x624_75)
+		printf("\t832x624\t\t75 Hz (Mac II)\n");
+	if (edid_info->established_timings.timing_1024x768_87i)
+		printf("\t1024x768\t87 Hz Interlaced (8514A)\n");
+	if (edid_info->established_timings.timing_1024x768_60)
+		printf("\t1024x768\t60 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_1024x768_70)
+		printf("\t1024x768\t70 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_1024x768_75)
+		printf("\t1024x768\t75 Hz (VESA)\n");
+	if (edid_info->established_timings.timing_1280x1024_75)
+		printf("\t1280x1024\t75 (VESA)\n");
 
 	/* Standard timings. */
-	for(i = 0; i < 8; i++) {
+	printf("Standard timings:\n");
+	for (i = 0; i < 8; i++) {
 		double aspect = 1;
 		unsigned int x, y;
 		unsigned char xres, vfreq;
 		xres = edid_info->standard_timing[i].xresolution;
 		vfreq = edid_info->standard_timing[i].vfreq;
-		if((xres != vfreq) ||
+		if ((xres != vfreq) ||
 		   ((xres != 0) && (xres != 1)) ||
 		   ((vfreq != 0) && (vfreq != 1))) {
-			switch(edid_info->standard_timing[i].aspect) {
+			switch (edid_info->standard_timing[i].aspect) {
 				case 0: aspect = 1; break; /*undefined*/
 				case 1: aspect = 0.750; break;
 				case 2: aspect = 0.800; break;
@@ -190,8 +192,9 @@ void print_edid(struct edid1_info *edid_info)
 			}
 			x = (xres + 31) * 8;
 			y = x * aspect;
-			printf("ctiming: %dx%d@%d\n", x, y,
-			       (vfreq & 0x3f) + 60);
+			printf("\t%dx%d%c\t%d Hz\n", x, y,
+			       x > 1000 ? ' ' : '\t', (vfreq & 0x3f) + 60);
+			have_timing = 1;
 		}
 	}
 
@@ -202,18 +205,19 @@ void print_edid(struct edid1_info *edid_info)
 	 * with multiple dtimings is unknown, since I don't have one. -daniels */
 	timings = (unsigned char *)&edid_info->monitor_details.detailed_timing;
 	monitor = NULL;
-	for(i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) {
 		timing = &(timings[i*18]);
 		if (timing[0] == 0 && timing[1] == 0) {
 			monitor = &edid_info->monitor_details.monitor_descriptor[i];
 			if (monitor->type == edid_monitor_descriptor_serial)
-				printf("monitorserial: %s\n", snip(monitor->data.string));
+				printf("Monitor serial number: %s\n", snip(monitor->data.string));
 			else if (monitor->type == edid_monitor_descriptor_ascii)
-				printf("monitorid: %s\n", snip(monitor->data.string));
+				printf("Monitor ID: %s\n", snip(monitor->data.string));
 			else if (monitor->type == edid_monitor_descriptor_name)
-				printf("monitorname: %s\n", snip(monitor->data.string));
+				printf("Monitor name: %s\n", snip(monitor->data.string));
 			else if (monitor->type == edid_monitor_descriptor_range)
-				printf("monitorrange: %d-%d, %d-%d\n",
+				printf("Monitor range limits, horizontal sync: %d-%d Hz," \
+				       " vertical refresh: %d-%d KHz\n",
 				       monitor->data.range_data.horizontal_min,
 				       monitor->data.range_data.horizontal_max,
 				       monitor->data.range_data.vertical_min,
@@ -244,13 +248,12 @@ void print_edid(struct edid1_info *edid_info)
 			v_active = ((v_active_high) << 8) | v_active_low;
 			v_total = v_active + v_blanking;
 			vfreq = (double)pixclock/((double)v_total*(double)h_total);
-			printf("dtiming: %dx%d@%d\n", h_active, v_active, vfreq);
+			printf("\t%dx%d\%c\t%d Hz (detailed)\n", h_active, v_active,
+			       h_active > 1000 ? ' ' : '\t', vfreq);
+			have_timing = 1;
 		}
 	}
 
-	get_edid_ranges(edid_info, &hmin, &hmax, &vmin, &vmax);
-	if (hmin > 0) {
-		printf("Horizontal sync: %d-%d Vertical refresh: %d-%d\n", hmin,
-		       hmax, vmin, vmax);
-	}
+	if (!have_timing)
+		printf("\tNone\n");
 }
