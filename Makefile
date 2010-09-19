@@ -1,4 +1,4 @@
-CFLAGS = -W -Wall -g -O2
+CFLAGS = -W -Wall -g -O2 -D__WITHOUT_UBOOT_
 
 all: edid
 

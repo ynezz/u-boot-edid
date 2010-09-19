@@ -28,7 +28,11 @@
 
 #ifndef __EDID_H_
 #define __EDID_H_
+#ifdef __WITHOUT_UBOOT_
 #include <sys/types.h>
+#else
+#include <linux/types.h>
+#endif
 
 /* Aspect ratios used in EDID info. */
 enum edid_aspect {
@@ -91,7 +95,7 @@ struct edid_detailed_timing {
 		unsigned char digital_composite: 2;
 		unsigned char variant: 2;
 		unsigned char zero: 1;
-	} flags; 
+	} flags;
 } __attribute__ ((packed));
 
 enum {
@@ -148,7 +152,7 @@ struct edid1_info {
 		unsigned char sync_on_green: 1;
 		unsigned char unused: 2;
 		unsigned char voltage_level: 2;
-	} video_input_definition; 
+	} video_input_definition;
 	unsigned char max_size_horizontal;
 	unsigned char max_size_vertical;
 	unsigned char gamma;
@@ -159,7 +163,7 @@ struct edid1_info {
 		unsigned char active_off: 1;
 		unsigned char suspend: 1;
 		unsigned char standby: 1;
-	} feature_support; 
+	} feature_support;
 	unsigned char color_characteristics[10];
 	struct {
 		unsigned char timing_720x400_70: 1;

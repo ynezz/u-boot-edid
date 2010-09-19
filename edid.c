@@ -25,9 +25,15 @@
  *
  */
 
+#ifdef __WITHOUT_UBOOT_
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#else
+#include <common.h>
+#include <linux/ctype.h>
+#include <linux/string.h>
+#endif
 
 #include "edid.h"
 
@@ -68,11 +74,11 @@ int check_edid(struct edid1_info *edid_info)
 static char *snip(char *string)
 {
 	int i;
-	
+
 	/* This is always a 13 character buffer */
 	/* and it's not always terminated. */
 	string[12] = '\0';
-	
+
 	while(((i = strlen(string)) > 0) &&
 	       (isspace(string[i - 1]) ||
 	        (string[i - 1] == '\n') ||
@@ -100,7 +106,7 @@ void print_edid(struct edid1_info *edid_info)
 	manufacturer[3] = '\0';
 	printf("Product ID code: %04x\n", edid_info->product_code);
 	printf("Manufacturer: %s\n", manufacturer);
-	
+
 	if (edid_info->serial_number != 0xffffffff) {
 		if (strcmp(manufacturer, "MAG") == 0) {
 			edid_info->serial_number -= 0x7000000;
