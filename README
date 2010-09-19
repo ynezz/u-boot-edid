@@ -1,0 +1,4 @@
+This is just standalone version of EDID parser for u-boot. It's just the EDID
+parser part stolen from ddcprobe project, modified to read the EDID content
+from files, dumps of EDID EEPROM. It was created just for easier & faster
+testing and prototyping, without the need to recompile and test whole u-boot.
